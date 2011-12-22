@@ -1,5 +1,7 @@
 # Ruby Conventions
 
+Here's a great place to start: https://github.com/bbatsov/ruby-style-guide
+
 And by conventions, we mean educated but still somewhat
 arbitrary tidbits that make code feel better to our
 collective spirits. These are subject to change as our
