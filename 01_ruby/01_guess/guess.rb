@@ -11,7 +11,7 @@
 # we use a 'say' method instead of just calling 'puts' so that we
 # can flush stdout as well
 #
-def say msg
+def say(msg)
   $stdout.puts msg
   $stdout.flush
 end
@@ -19,14 +19,14 @@ end
 #
 # validate that a string is a valid integer
 #
-def valid? str
+def valid?(str)
   !str.nil? && str.match(/^\d+$/)
 end
 
 #
 # repeatedly ask the user until the user gives an integer
 #
-def ask limit
+def ask(limit)
   response = nil
 
   until valid? response
@@ -47,7 +47,7 @@ end
 #
 # core guessing game algorithm
 #
-def play_game limit
+def play_game(limit)
   chosen = rand(limit) + 1
   found  = false
 
