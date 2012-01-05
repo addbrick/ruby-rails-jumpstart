@@ -41,6 +41,7 @@ Diving Deeper
 
 Diving Deeper
 
+* https://github.com/maccman/supermodel/blob/master/lib/supermodel/association.rb
 * http://yehudakatz.com/2010/01/10/activemodel-make-any-ruby-object-feel-like-activerecord/
 
 
