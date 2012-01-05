@@ -33,4 +33,15 @@ Diving Deeper
 * http://www.slideshare.net/oisin/simple-rest-services-with-sinatra
 * http://pragprog.com/screencasts/v-aksinatra/classy-web-development-with-sinatra
 
+# SuperModel
+
+* Step 1: (quick) Read http://rubydoc.info/gems/activemodel/3.1.3/frames
+* Step 2: (quick) Read https://github.com/maccman/supermodel/
+* Step 3: (medium) Learn https://github.com/maccman/supermodel/blob/master/lib/supermodel/base.rb
+
+Diving Deeper
+
+* http://yehudakatz.com/2010/01/10/activemodel-make-any-ruby-object-feel-like-activerecord/
+
+
 # More to come soon!
