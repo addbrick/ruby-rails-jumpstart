@@ -1,5 +1,5 @@
 
-Log Processing & Analytics
+# Log Processing & Analytics
 
 * Run the script using "ruby stats.rb the_log.txt"
 

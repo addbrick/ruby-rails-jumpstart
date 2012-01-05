@@ -1,5 +1,5 @@
 
-A Ruby Web Service using Sinatra for simple GET Requests
+# A Ruby Web Service using Sinatra for simple GET Requests
 
 * Run the script using "ruby application.rb"
 

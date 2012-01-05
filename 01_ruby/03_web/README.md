@@ -1,5 +1,5 @@
 
-Calling Web Services using open-uri
+# Calling Web Services using open-uri
 
 * Run the script using "ruby duck.rb"
 

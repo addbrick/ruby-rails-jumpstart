@@ -1,5 +1,5 @@
 
-RESTFul Web Services using Sinatra
+# RESTFul Web Services using Sinatra
 
 * Run the script using "ruby application.rb"
 

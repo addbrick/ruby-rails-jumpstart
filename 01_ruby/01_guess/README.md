@@ -1,5 +1,5 @@
 
-The Guessing Game
+# The Guessing Game
 
 * Run the script using "ruby guess.rb 10" (or whatever limit you like)
 * Run the auto-player using "ruby play.rb 10"
