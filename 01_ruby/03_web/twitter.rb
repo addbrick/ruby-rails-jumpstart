@@ -7,12 +7,13 @@ if ARGV.empty?
   exit
 end
 
-BASE_URL = "http://api.duckduckgo.com/?format=json&pretty=1&q="     # remote API url
+BASE_URL = "http://search.twitter.com/search.json?q="    			# remote API url
 query     = ARGV.shift                                              # query string
 query_url = BASE_URL + URI.escape(query)                            # putting the 2 together
 
 puts " ======================================== "                   # fancy output
-puts "   #{query_url}"                                              # fancy output
+puts " You seached for #{query}"
+#puts "   #{query_url}"                                              # fancy output
 
 object = open(query_url) do |v|                                     # call the remote API
   input = v.read                                                    # read the full response
@@ -20,18 +21,13 @@ object = open(query_url) do |v|                                     # call the r
   JSON.parse(input)                                                 # parse the JSON & return it from the block
 end
 
-puts " ======================================== "                   # fancy output
-puts "   #{object['Heading']}"
-puts "     #{object['Abstract']}"
-puts "     #{object['AbstractURL']}"
-puts " ---------------------------------------- "
-
-object['RelatedTopics'].each do |rt|                                # processing sub-elements
+object['results'].each do |t|
+  puts " ======================================== "
+  puts " #{t['from_user_name']}"
+  puts "  @#{t['from_user']}"
   puts
-  puts "   * #{rt['Text']}"
-  puts "     #{rt['FirstURL']}"
+  puts "   #{t['text']}"
+  puts
+  puts " #{t['created_at']}"
 end
-
-puts                                                                # fancy output
-puts " ---------------------------------------- "
-puts " ======================================== "
+puts " ======================================== "                   # fancy output
