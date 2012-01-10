@@ -52,12 +52,23 @@ def play_game(limit)
   found  = false
 
   until found
+  
+    # To know when to lie
+    timeToLie = rand(100) + 1
+    if (timeToLie >= 1 && timeToLie <= 25)
+    	timeToLie = (((timeToLie % 2) == 0) ? true : false)
+    else
+      timeToLie = false
+    end
+    # Could also be written like next line (didn't know which is better)
+    # timeToLie = ((timeToLie >= 1 && timeToLie <= 25) ? (((timeToLie % 2) == 0) ? true : false) : false)
+      
     guess = ask(limit)
   
     if guess < chosen
-      say "WRONG:too low"
+      say (timeToLie ? "WRONG: too high" : "WRONG:too low")
     elsif guess > chosen
-      say "WRONG:too high"
+      say (timeToLie ? "WRONG: too low" : "WRONG:too high")
     else
       found = true
     end
