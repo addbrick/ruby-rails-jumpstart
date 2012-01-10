@@ -64,27 +64,27 @@ class ExampleServer < Sinatra::Base
   # FIXME #1: implement reverse service that reverses the message
   get '/reverse/:message' do
     content_type 'text/plain', :charset => 'utf-8'
-    params[:message]
+    params[:message].reverse
   end
 
   # FIXME #1: implement reverse service that reverses the message
   get '/reverse' do
     content_type 'text/plain', :charset => 'utf-8'
-    params[:message]
+    params[:message].reverse
   end
 
   # FIXME #2: implement pig latin service that translates the message
   # using the pig latin algorithm
   get '/piglatin/:message' do
     content_type 'text/plain', :charset => 'utf-8'
-    params[:message]
+    params[:message] + "\ngive to toPiglatin method that will return it in pig latin\nI don't know pig latin"
   end
 
   # FIXME #2: implement pig latin service that translates the message
   # using the pig latin algorithm
   get '/piglatin' do
     content_type 'text/plain', :charset => 'utf-8'
-    params[:message]
+    params[:message] + "\ngive to toPiglatin method that will return it in pig latin\nI don't know pig latin"
   end
 
   # FIXME #3: implement snowball stemming service that translates the
@@ -98,7 +98,7 @@ class ExampleServer < Sinatra::Base
   # FIXME #3: implement snowball stemming service that translates the
   # message into a comma-separated list of tokens using the snowball
   # stemming algorithm
-  get '/piglatin' do
+  get '/snowball' do
     content_type 'text/plain', :charset => 'utf-8'
     params[:message]
   end
