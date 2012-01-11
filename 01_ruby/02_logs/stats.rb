@@ -4,8 +4,8 @@ def check_for_key_in_hash(hash, key)
     (block_given? ? yield(true) : hash[key] += 1)
     return false
   else
-  	(block_given? ? yield(false) : hash[key] = 1)
-  	return true
+    (block_given? ? yield(false) : hash[key] = 1)
+    return true
   end
 end
 
@@ -38,29 +38,30 @@ date_hash = Hash.new
 open(filename).each do |m|              # loop over every line of the file
   # there is probably an easier way to skip first line (aka header)
   if firstLine
-   firstLine = false
-   next
+    firstLine = false
+    next
   end
-  
+
   m.chomp!                              # remove the trailing newline
   values = m.split(",")                 # split comma-separated fields into a values array
 
   check_for_key_in_hash(date_hash, values[0])
-  
+
   unique_users += 1 if check_for_key_in_hash(user_hash, values[1])
-  
-  unique_pages += 1 if check_for_key_in_hash(page_hash, values[2]) { |in_hash| 
-  																		if in_hash
-  																		  page_hash[values[2]]["total_views"] += 1
-  																		  unless page_hash[values[2]]["unique_users_view"].include?(values[1])
-  																		    page_hash[values[2]]["unique_users_view"] << values[1]
-  																		  end
-  																		else
-  																		  page_hash[values[2]] = Hash["total_views", 1, "unique_users_view", [values[1]]]
-  																		end }
+
+  unique_pages += 1 if check_for_key_in_hash(page_hash, values[2]) do |in_hash| 
+    if in_hash
+      page_hash[values[2]]["total_views"] += 1
+      unless page_hash[values[2]]["unique_users_view"].include?(values[1])
+        page_hash[values[2]]["unique_users_view"] << values[1]
+      end
+    else
+      page_hash[values[2]] = Hash["total_views", 1, "unique_users_view", [values[1]]]
+    end
+  end
 
   lines += 1  # bump the counter
-  
+
 end
 
 most_active_day = find_most_active(date_hash, most_active_day)
