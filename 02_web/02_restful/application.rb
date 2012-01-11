@@ -94,6 +94,7 @@ class RestfulServer < Sinatra::Base
     end
 
     idea = Idea.find(params[:id])
+    # wrap in error protection
     idea.update_attributes!(JSON.parse(request.body.read))
     json_out(idea)
   end
@@ -180,13 +181,8 @@ class RestfulServer < Sinatra::Base
       return
     end
 
-    Inventor.records.each do |inventor| 
-      puts " ------- "
-      puts inventor.class
-      puts " ------- "
-      inventor.destroy
-    end
-    Idea.records.each { |idea| idea.destroy }
+    Inventor.all.each { |inventor| inventor.destroy }
+    Idea.all.each { |idea| idea.destroy }
 
     status 204
     "Everything is gone!\n"
