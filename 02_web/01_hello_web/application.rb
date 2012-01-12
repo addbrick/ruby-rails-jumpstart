@@ -86,9 +86,9 @@ class ExampleServer < Sinatra::Base
   # outputs a message from the url parameter as plain text,
   # a la : http://localhost:4567/echo?message=foo
   #
-  get '/echo' do
-    content_type 'text/plain', :charset => 'utf-8'
-    params[:message]
+  get '/echo.?:format?' do
+    #content_type 'text/plain', :charset => 'utf-8'
+    reformat(params[:message])
   end
 
   # FIXME #1: implement reverse service that reverses the message

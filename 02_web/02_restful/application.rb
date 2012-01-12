@@ -4,17 +4,46 @@ require 'sinatra/base'
 require 'supermodel'
 require 'json'
 require 'people_places_things'
+require 'open-uri'
 
 #
 # For documentation, see:
 #   https://github.com/maccman/supermodel/blob/master/lib/supermodel/base.rb
 #
 
+# A lot of the comments are just me making sure the create!s and update_attributes!s are raising the same exception
+
 class Inventor < SuperModel::Base
   include SuperModel::RandomID
+  include ActiveModel::Validations
   
   validates_presence_of :name
   validates_presence_of :gender
+  validate :gender_match_name
+  
+  # checks if the gender given matches the gender returned form rapleaf
+  def gender_match_name
+    name = @attributes["name"]
+    gender = @attributes["gender"]
+    
+    first_name = (name.include?(" ") ? PersonName.new(name) : name)
+    
+    # {"status":"OK","answer":{"input":"Phil","gender":"Male","likelihood":"0.993616"}}
+    # {"status":"OK","answer":{"input":"Lisa","gender":"Female","likelihood":"0.990467"}}
+    # {"status":"NOT FOUND","answer":{"input":"Sam"}}
+    object = open("https://www.rapleaf.com/developers/try_name_to_gender?query=#{first_name}") do |v|                                     # call the remote API
+      input = v.read      # read the full response
+      # puts input          # un-comment this to see the returned JSON magic
+      JSON.parse(input)   # parse the JSON & return it from the block
+    end
+    
+    # only checks gender if likelihood >= 0.8
+    return unless object["status"] == "OK" && object["answer"]["likelihood"].to_f >= 0.8
+    
+    return if object["answer"]["gender"] == gender.capitalize #true
+    
+    errors.add(:base, "Name does not match gender")
+  end
 end
 
 class Idea < SuperModel::Base
@@ -28,7 +57,7 @@ end
 class RestfulServer < Sinatra::Base
   include PeoplePlacesThings
   
-  ANONYMOUS = Inventor.create(:name => "ANONYMOUS")
+  ANONYMOUS = Inventor.create!(:name => "ANONYMOUS", :gender => "unknown")
 
   # helper method that returns json
   def json_out(data)
@@ -41,32 +70,15 @@ class RestfulServer < Sinatra::Base
     status 404
     body "not found\n"
   end
-  
-  # gender detection ASK SUNNY ABOUT THIS
-  def gender_detection(first_name)
-    # {"status":"OK","answer":{"input":"Phil","gender":"Male","likelihood":"0.993616"}}
-    # {"status":"OK","answer":{"input":"Lisa","gender":"Female","likelihood":"0.990467"}}
-    object = open("https://www.rapleaf.com/developers/try_name_to_gender?query=#{first_name}") do |v|                                     # call the remote API
-      input = v.read      # read the full response
-      puts input          # un-comment this to see the returned JSON magic
-      JSON.parse(input)   # parse the JSON & return it from the block
-    end
-    unless object["answer"]["likelihood"].to_i >= .8
-      status 400
-      body "bad requset\n"#"Name and gender do not match\n"
-      return
-    end
-    object["answer"]["gender"]
-  end
-  
+
   # obtain a list of all ideas
   def list_ideas
     json_out(Idea.all)
   end
 
-  # display the list of ideas
+  # display the list of inventors and ideas
   get '/' do
-    list_ideas
+    list_all
   end
 
   # display the list of ideas
@@ -90,14 +102,23 @@ class RestfulServer < Sinatra::Base
         attributes.delete("Inventor_name")
       else
         
+        # curl -v -v -X POST --data-binary '{"category":"foo","text":"bar","Inventor_name":"Sam","Inventor_gender":"Male"}' http://localhost:4567/ideas
+          # No Error
+        
+        # curl -v -v -X POST --data-binary '{"category":"foo","text":"bar","Inventor_name":"Sam"}' http://localhost:4567/ideas
+          # inspect #<SuperModel::InvalidRecord: SuperModel::InvalidRecord>
+          # class SuperModel::InvalidRecord
         begin
-          attributes[:Inventor_id] = Inventor.create(:name => attributes["Inventor_name"], :gender => attributes["Inventor_gender"]).id
-        rescue StandardError => ex
+          attributes[:Inventor_id] = Inventor.create!(:name => attributes["Inventor_name"], :gender => attributes["Inventor_gender"]).id
+        rescue SuperModel::InvalidRecord => ex #Exception => ex
+          #puts "inspect #{ex.inspect}"
+          #puts "class #{ex.class}"
           status 400
           body "bad request\n"#"Inventor needs a name and gender\n"
           return
         end
         attributes.delete("Inventor_name")
+        attributes.delete("Inventor_gender")
       end
     else
       attributes[:Inventor_id] = ANONYMOUS.id
@@ -105,7 +126,28 @@ class RestfulServer < Sinatra::Base
     
     begin
       idea = Idea.create!(attributes)
-    rescue StandardError => ex
+      
+      # curl -v -v -X POST --data-binary '{"category":"foo","text":"bar"}' http://localhost:4567/ideas
+        # No error
+      
+      # curl -v -v -X POST --data-binary '{"category":"bar"}' http://localhost:4567/ideas
+        # inspect #<NoMethodError: undefined method `text' for #<Idea:0x007f9023183408>>
+        # class NoMethodError
+        
+      # curl -v -v -X POST --data-binary '{"text":"bar"}' http://localhost:4567/ideas
+        # inspect #<NoMethodError: undefined method `category' for #<Idea:0x007fd65b993b38>>
+        # class NoMethodError
+        
+      # curl -v -v -X POST --data-binary '{"foo":"bar"}' http://localhost:4567/ideas
+        # inspect #<NoMethodError: undefined method `category' for #<Idea:0x007fdc9b0e94d8>>
+        # class NoMethodError
+        
+      # curl -v -v -X POST --data-binary '{}' http://localhost:4567/ideas
+        # inspect #<NoMethodError: undefined method `category' for #<Idea:0x007fa9c10e8c70>>
+        # class NoMethodError
+    rescue NoMethodError => ex #Exception => ex
+      #puts "inspect #{ex.inspect}"
+      #puts "class #{ex.class}"
       status 400
       body "bad request\n"#"Idea needs a category and text\n"
       return
@@ -131,9 +173,45 @@ class RestfulServer < Sinatra::Base
     end
 
     idea = Idea.find(params[:id])
+    
+    # curl -v -v -X PUT --data-binary '{}' http://localhost:4567/ideas/:id
+      # No error
+    
+    # curl -v -v -X PUT --data-binary '{"category":""}' http://localhost:4567/ideas/:id
+      # inspect #<SuperModel::InvalidRecord: SuperModel::InvalidRecord>
+      # class SuperModel::InvalidRecord
+    
+    # curl -v -v -X PUT --data-binary '{"text":""}' http://localhost:4567/ideas/:id
+      # inspect #<SuperModel::InvalidRecord: SuperModel::InvalidRecord>
+      # class SuperModel::InvalidRecord
+      
+    # curl -v -v -X PUT --data-binary '{"text":"","category":""}' http://localhost:4567/ideas/:id
+      # inspect #<SuperModel::InvalidRecord: SuperModel::InvalidRecord>
+      # class SuperModel::InvalidRecord
+    
+    # curl -v -v -X PUT --data-binary '{"text":"faz","category":""}' http://localhost:4567/ideas/:id
+      # inspect #<SuperModel::InvalidRecord: SuperModel::InvalidRecord>
+      # class SuperModel::InvalidRecord
+
+    # curl -v -v -X PUT --data-binary '{"text":"faz","category":""}' http://localhost:4567/ideas/:id
+      # inspect #<SuperModel::InvalidRecord: SuperModel::InvalidRecord>
+      # class SuperModel::InvalidRecord
+
+    # curl -v -v -X PUT --data-binary '{"text":"","category":"fiz"}' http://localhost:4567/ideas/:id
+      # inspect #<SuperModel::InvalidRecord: SuperModel::InvalidRecord>
+      # class SuperModel::InvalidRecord
+
+    # curl -v -v -X PUT --data-binary '{"category":"fiz","text":""}' http://localhost:4567/ideas/:id
+      # inspect #<SuperModel::InvalidRecord: SuperModel::InvalidRecord>
+      # class SuperModel::InvalidRecord
+
+    # curl -v -v -X PUT --data-binary '{"category":"fiz","text":"faz"}' http://localhost:4567/ideas/:id
+      # No error
     begin
       idea.update_attributes!(JSON.parse(request.body.read))
-    rescue StandardError => ex
+    rescue SuperModel::InvalidRecord => ex #Exception => ex 
+      #puts "inspect #{ex.inspect}"
+      #puts "class #{ex.class}"
       status 400
       body "bad request\n"#"Idea needs a category and text\n"
       return
@@ -170,7 +248,25 @@ class RestfulServer < Sinatra::Base
 
     begin
       inventor = Inventor.create!(attributes)
-    rescue StandardError => ex
+      
+      # curl -v -v -X POST --data-binary '{"name":"bar"}' http://localhost:4567/inventors
+        # inspect #<NoMethodError: undefined method `gender' for #<Inventor:0x007ff4c99944e8>>
+        # class NoMethodError
+        
+      # curl -v -v -X POST --data-binary '{"gender":"bar"}' http://localhost:4567/inventors
+        # inspect #<NoMethodError: undefined method `name' for #<Inventor:0x007fb78d15fd50>>
+        # class NoMethodError
+        
+      # curl -v -v -X POST --data-binary '{"foo":"bar"}' http://localhost:4567/inventors
+        # inspect #<NoMethodError: undefined method `name' for #<Inventor:0x007f935a9937a8>>
+        # class NoMethodError
+        
+      # curl -v -v -X POST --data-binary '{}' http://localhost:4567/inventors
+        # inspect #<NoMethodError: undefined method `name' for #<Inventor:0x007fb7029f1350>>
+        # class NoMethodError
+    rescue SuperModel::InvalidRecord => ex#NoMethodError => ex #Exception => ex
+      #puts "inspect #{ex.inspect}"
+      #puts "class #{ex.class}"
       status 400
       body "bad request\n"#"Inventor needs a name and gender\n"
       return
@@ -189,6 +285,7 @@ class RestfulServer < Sinatra::Base
   end
 
   # update an idea
+  # changing gender could cause status 400 "bad request" but attribute will still be updated
   put '/inventors/:id' do
     unless Inventor.exists?(params[:id])
       not_found
@@ -196,9 +293,46 @@ class RestfulServer < Sinatra::Base
     end
 
     inventor = Inventor.find(params[:id])
+    
+    # curl -v -v -X PUT --data-binary '{}' http://localhost:4567/inventors/:id
+      # No error
+    
+    # curl -v -v -X PUT --data-binary '{"name":""}' http://localhost:4567/inventors/:id
+      # inspect #<SuperModel::InvalidRecord: SuperModel::InvalidRecord>
+      # class SuperModel::InvalidRecord
+    
+    # curl -v -v -X PUT --data-binary '{"gender":""}' http://localhost:4567/inventors/:id
+      # inspect #<SuperModel::InvalidRecord: SuperModel::InvalidRecord>
+      # class SuperModel::InvalidRecord
+      
+    # curl -v -v -X PUT --data-binary '{"gender":"","name":""}' http://localhost:4567/inventors/:id
+      # inspect #<SuperModel::InvalidRecord: SuperModel::InvalidRecord>
+      # class SuperModel::InvalidRecord
+    
+    # curl -v -v -X PUT --data-binary '{"gender":"faz","name":""}' http://localhost:4567/inventors/:id
+      # inspect #<SuperModel::InvalidRecord: SuperModel::InvalidRecord>
+      # class SuperModel::InvalidRecord
+
+    # curl -v -v -X PUT --data-binary '{"gender":"faz","name":""}' http://localhost:4567/inventors/:id
+      # inspect #<SuperModel::InvalidRecord: SuperModel::InvalidRecord>
+      # class SuperModel::InvalidRecord
+
+    # curl -v -v -X PUT --data-binary '{"gender":"","name":"fiz"}' http://localhost:4567/inventors/:id
+      # inspect #<SuperModel::InvalidRecord: SuperModel::InvalidRecord>
+      # class SuperModel::InvalidRecord
+
+    # curl -v -v -X PUT --data-binary '{"name":"fiz","gender":""}' http://localhost:4567/inventors/:id
+      # inspect #<SuperModel::InvalidRecord: SuperModel::InvalidRecord>
+      # class SuperModel::InvalidRecord
+
+    # curl -v -v -X PUT --data-binary '{"name":"fiz","gender":"faz"}' http://localhost:4567/inventors/:id
+      # No error
+    
     begin
       inventor.update_attributes!(JSON.parse(request.body.read))
-    rescue StandardError => ex
+    rescue SuperModel::InvalidRecord => ex #Exception => ex
+      #puts "inspect #{ex.inspect}"
+      #puts "class #{ex.class}"
       status 400
       body "bad request\n"#"Inventor needs a name and gender\n"
       return
