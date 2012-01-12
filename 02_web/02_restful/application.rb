@@ -44,6 +44,8 @@ class RestfulServer < Sinatra::Base
   
   # gender detection ASK SUNNY ABOUT THIS
   def gender_detection(first_name)
+    # {"status":"OK","answer":{"input":"Phil","gender":"Male","likelihood":"0.993616"}}
+    # {"status":"OK","answer":{"input":"Lisa","gender":"Female","likelihood":"0.990467"}}
     object = open("https://www.rapleaf.com/developers/try_name_to_gender?query=#{first_name}") do |v|                                     # call the remote API
       input = v.read      # read the full response
       puts input          # un-comment this to see the returned JSON magic

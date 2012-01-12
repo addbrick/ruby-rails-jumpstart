@@ -5,7 +5,7 @@ require 'sinatra/base'
 require 'json'
 require 'roxml'
 require 'yaml'
-require 'lingua/stemmer'
+require 'lingua/stemmer' # source https://github.com/aurelian/ruby-stemmer
 
 class ExampleServer < Sinatra::Base
   CONTENT_TYPES = {
