@@ -17,7 +17,7 @@ puts " You seached for #{query}"
 
 object = open(query_url) do |v|                                     # call the remote API
   input = v.read                                                    # read the full response
-#  puts input                                                       # un-comment this to see the returned JSON magic
+  #  puts input                                                       # un-comment this to see the returned JSON magic
   JSON.parse(input)                                                 # parse the JSON & return it from the block
 end
 

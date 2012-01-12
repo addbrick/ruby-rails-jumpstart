@@ -11,7 +11,7 @@ end
 
 # returns most_active, which is the key with the highest count in hash
 def find_most_active(hash, most_active)
-  hash.each { |key, count| most_active = key if most_active == "unknown" || (block_given? ? yield(hash, count, most_active) : count > hash[most_active]) }
+  hash.each { |key, count| most_active = key if most_active == :unknown || (block_given? ? yield(hash, count, most_active) : count > hash[most_active]) }
   most_active
 end
 
@@ -24,12 +24,12 @@ end
 
 firstLine = true
 lines = 0                               # a humble line counter
-unique_users = 0#"unknown"                # someday, this will work
-unique_pages = 0#"unknown"                # someday, this will work
-most_active_day = "unknown"             # someday, this will work"
-most_active_user = "unknown"            # someday, this will work
-most_active_page = "unknown"            # someday, this will work
-most_active_page_unique_users = "unknown"
+unique_users = 0#:unknown                # someday, this will work
+unique_pages = 0#:unknown                # someday, this will work
+most_active_day = :unknown             # someday, this will work"
+most_active_user = :unknown            # someday, this will work
+most_active_page = :unknown            # someday, this will work
+most_active_page_unique_users = :unknown
 
 user_hash = Hash.new
 page_hash = Hash.new

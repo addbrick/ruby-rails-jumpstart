@@ -34,7 +34,7 @@ def ask(limit)
 
     say "GUESS(#{limit})"
     response = gets
-    
+
     if response == "exit\n" || response == "quit\n"
       say "FAIL:exiting"
       exit
@@ -52,19 +52,19 @@ def play_game(limit)
   found  = false
 
   until found
-  
+
     # To know when to lie
     timeToLie = rand(100) + 1
     if (timeToLie >= 1 && timeToLie <= 25)
-    	timeToLie = (((timeToLie % 2) == 0) ? true : false)
+      timeToLie = (((timeToLie % 2) == 0) ? true : false)
     else
       timeToLie = false
     end
     # Could also be written like next line (didn't know which is better)
     # timeToLie = ((timeToLie >= 1 && timeToLie <= 25) ? (((timeToLie % 2) == 0) ? true : false) : false)
-      
+
     guess = ask(limit)
-  
+
     if guess < chosen
       say (timeToLie ? "WRONG: too high" : "WRONG:too low")
     elsif guess > chosen

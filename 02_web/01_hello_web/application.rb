@@ -5,7 +5,7 @@ require 'sinatra/base'
 require 'json'
 require 'roxml'
 require 'yaml'
-
+require 'lingua/stemmer'
 
 class ExampleServer < Sinatra::Base
   CONTENT_TYPES = {
@@ -35,6 +35,36 @@ class ExampleServer < Sinatra::Base
     end
   end
 
+  #
+  # translates a word to piglatin
+  # source http://www.dreamincode.net/forums/blog/1267/entry-3435-writing-a-pig-latin-converter-in-ruby-187/
+  #
+  def convert_word_to_pig_latin(word)
+    consonants = [ "B", "C", "D", "F", "G", "H", "J", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "V", "X", "Z", "W", "Y"]
+
+    if consonants.include?(word.chars.first.capitalize)
+      if consonants.include?(word[1,1].capitalize)
+        word[2..-1] + "-" + word[0,2] + "ay "
+      else
+        word[1..-1] + "-" + word[0,1] + "ay "
+      end
+    else
+      word + "-way "
+    end
+  end
+  
+  #
+  # translates a message to piglatin
+  #
+  def convert_message_to_pig_latin(message)
+    translatedText = ""
+    message.split.each do |word|
+      translatedText = translatedText + convert_word_to_pig_latin(word)
+    end
+    
+    translatedText
+  end
+  
   #
   # a basic time service, a la:
   # http://localhost:4567/time.txt (or .xml or .json or .yaml)
@@ -68,39 +98,45 @@ class ExampleServer < Sinatra::Base
   end
 
   # FIXME #1: implement reverse service that reverses the message
-  get '/reverse' do
-    content_type 'text/plain', :charset => 'utf-8'
-    params[:message].reverse
+  # XML IS NOT WORKING FOR THIS
+  get '/reverse.?:format?' do
+    #content_type 'text/plain', :charset => 'utf-8'
+    reformat(params[:message].reverse)
   end
 
   # FIXME #2: implement pig latin service that translates the message
   # using the pig latin algorithm
   get '/piglatin/:message' do
     content_type 'text/plain', :charset => 'utf-8'
-    params[:message] + "\ngive to toPiglatin method that will return it in pig latin\nI don't know pig latin"
+    convert_message_to_pig_latin(params[:message])# + "\ngive to toPiglatin method that will return it in pig latin\nI don't know pig latin"
   end
 
   # FIXME #2: implement pig latin service that translates the message
   # using the pig latin algorithm
-  get '/piglatin' do
-    content_type 'text/plain', :charset => 'utf-8'
-    params[:message] + "\ngive to toPiglatin method that will return it in pig latin\nI don't know pig latin"
+  # XML IS NOT WORKING FOR THIS
+  get '/piglatin.?:format?' do
+    #content_type 'text/plain', :charset => 'utf-8'
+    reformat(convert_message_to_pig_latin(params[:message]))# + "\ngive to toPiglatin method that will return it in pig latin\nI don't know pig latin")
   end
 
   # FIXME #3: implement snowball stemming service that translates the
   # message into a comma-separated list of tokens using the snowball
   # stemming algorithm
+  # LOOKED AT AND RAN SNOWBALL NOT SURE OF WHAT IT IS DOING
   get '/snowball/:message' do
     content_type 'text/plain', :charset => 'utf-8'
-    params[:message]
+    stemmer = Lingua::Stemmer.new(:language => "en")
+    stemmer.stem(params[:message])
   end
 
   # FIXME #3: implement snowball stemming service that translates the
   # message into a comma-separated list of tokens using the snowball
   # stemming algorithm
-  get '/snowball' do
-    content_type 'text/plain', :charset => 'utf-8'
-    params[:message]
+  # XML IS NOT WORKING FOR THIS
+  get '/snowball.?:format?' do
+    #content_type 'text/plain', :charset => 'utf-8'
+    stemmer = Lingua::Stemmer.new(:language => "en")
+    reformat(stemmer.stem(params[:message]))
   end
 
   run! if app_file == $0

@@ -1,9 +1,9 @@
-
 require 'rubygems'
 require 'sinatra'
 require 'sinatra/base'
 require 'supermodel'
 require 'json'
+require 'people_places_things'
 
 #
 # For documentation, see:
@@ -12,14 +12,22 @@ require 'json'
 
 class Inventor < SuperModel::Base
   include SuperModel::RandomID
+  
+  validates_presence_of :name
+  validates_presence_of :gender
 end
 
 class Idea < SuperModel::Base
   include SuperModel::RandomID
+  
   belongs_to Inventor
+  validates_presence_of :category
+  validates_presence_of :text
 end
 
 class RestfulServer < Sinatra::Base
+  include PeoplePlacesThings
+  
   ANONYMOUS = Inventor.create(:name => "ANONYMOUS")
 
   # helper method that returns json
@@ -33,7 +41,22 @@ class RestfulServer < Sinatra::Base
     status 404
     body "not found\n"
   end
-
+  
+  # gender detection ASK SUNNY ABOUT THIS
+  def gender_detection(first_name)
+    object = open("https://www.rapleaf.com/developers/try_name_to_gender?query=#{first_name}") do |v|                                     # call the remote API
+      input = v.read      # read the full response
+      puts input          # un-comment this to see the returned JSON magic
+      JSON.parse(input)   # parse the JSON & return it from the block
+    end
+    unless object["answer"]["likelihood"].to_i >= .8
+      status 400
+      body "bad requset\n"#"Name and gender do not match\n"
+      return
+    end
+    object["answer"]["gender"]
+  end
+  
   # obtain a list of all ideas
   def list_ideas
     json_out(Idea.all)
@@ -64,15 +87,27 @@ class RestfulServer < Sinatra::Base
         attributes[:Inventor_id] = Inventor.find_by_attribute(:name, attributes["Inventor_name"]).id
         attributes.delete("Inventor_name")
       else
-        attributes[:Inventor_id] = Inventor.create(:name => attributes["Inventor_name"]).id
+        
+        begin
+          attributes[:Inventor_id] = Inventor.create(:name => attributes["Inventor_name"], :gender => attributes["Inventor_gender"]).id
+        rescue StandardError => ex
+          status 400
+          body "bad request\n"#"Inventor needs a name and gender\n"
+          return
+        end
         attributes.delete("Inventor_name")
       end
     else
-      puts "setting ANONYMOUS"
       attributes[:Inventor_id] = ANONYMOUS.id
     end
-
-    idea = Idea.create!(attributes)
+    
+    begin
+      idea = Idea.create!(attributes)
+    rescue StandardError => ex
+      status 400
+      body "bad request\n"#"Idea needs a category and text\n"
+      return
+    end
     json_out(idea)
   end
 
@@ -94,8 +129,13 @@ class RestfulServer < Sinatra::Base
     end
 
     idea = Idea.find(params[:id])
-    # wrap in error protection
-    idea.update_attributes!(JSON.parse(request.body.read))
+    begin
+      idea.update_attributes!(JSON.parse(request.body.read))
+    rescue StandardError => ex
+      status 400
+      body "bad request\n"#"Idea needs a category and text\n"
+      return
+    end
     json_out(idea)
   end
 
@@ -126,7 +166,13 @@ class RestfulServer < Sinatra::Base
   post '/inventors' do
     attributes = JSON.parse(request.body.read)
 
-    inventor = Inventor.create!(attributes)
+    begin
+      inventor = Inventor.create!(attributes)
+    rescue StandardError => ex
+      status 400
+      body "bad request\n"#"Inventor needs a name and gender\n"
+      return
+    end
     json_out(inventor)
   end
 
@@ -148,7 +194,13 @@ class RestfulServer < Sinatra::Base
     end
 
     inventor = Inventor.find(params[:id])
-    inventor.update_attributes!(JSON.parse(request.body.read))
+    begin
+      inventor.update_attributes!(JSON.parse(request.body.read))
+    rescue StandardError => ex
+      status 400
+      body "bad request\n"#"Inventor needs a name and gender\n"
+      return
+    end
     json_out(inventor)
   end
 
