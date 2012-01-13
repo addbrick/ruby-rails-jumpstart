@@ -1,6 +1,8 @@
 # Ruby & Rails Jumpstart - here's what we're working towards
 ## test 1
 ### test 2
+1. some text
+
 # Ruby proficiency (via Textmate, command-line, and possibly browser-based interpreter)
 
 * RVM ruby management
