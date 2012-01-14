@@ -1,18 +1,5 @@
 # Ruby & Rails Jumpstart - here's what we're working towards
 
-
-## Installation
-
-1. something
-
-2. something
-
-something else
-
-3. something
-
-
-
 # Ruby proficiency (via Textmate, command-line, and possibly browser-based interpreter)
 
 * RVM ruby management
