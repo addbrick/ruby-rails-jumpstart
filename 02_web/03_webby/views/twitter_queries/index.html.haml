@@ -1,0 +1,39 @@
+-#= render :haml, 'twitter_queries/index.js.haml'
+
+= javascript_include_tag 'twitter'
+
+.centerbox
+  
+  %h1 Twitter Queries
+  
+  %p
+    = link_to 'New Query', '/twitter_queries/new', :remote => true, :'data-type' => 'html', :class => "newQuery"
+  
+  %hr{:size => 1, :width => 300}
+  
+  %table{:align => :center, :width => "80%"}
+    %tr
+      %th Name
+      %th Query
+      %th
+      %th
+      %th
+  
+    - @queries.each do |query|
+      %tr
+        %td= query.name
+        %td= query.query
+        %td= link_to 'Show', "/twitter_queries/#{query.id}", :remote => true, :'data-type' => 'html'
+        %td= link_to 'Edit', "/twitter_queries/#{query.id}/edit", :remote => true, :'data-type' => 'html'
+        %td
+          - form_for query, "/twitter_queries/#{query.id}/delete", :id => "delete_#{query.id}", :remote => true, :'data-type' => 'html', :method => :POST do |f|
+            = csrf_tag
+            = link_to 'Destroy', "javascript:$('#delete_#{query.id}').submit();", :confirm => "Are you sure?"
+  
+          
+  
+  
+  %hr{:size => 1, :width => 300}
+  %br
+  
+  %p Powered by Twitter API

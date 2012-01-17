@@ -1,0 +1,17 @@
+%html
+  %head
+  %meta{:content => "text/html; charset=utf-8", "http-equiv" => "Content-Type"}/
+  %meta{:content => "IE=Edge;chrome=1", "http-equiv" => "X-UA-Compatible"}/
+  %meta{:content => "en-US", "http-equiv" => "Content-Language"}/
+  %meta{:content => "width=device-width, initial-scale=1", "name" => "viewport"}/
+  %meta{:content => csrf_token, :name => "csrf-token"}
+
+  %title Webby
+
+  = javascript_include_tag 'jquery', 'rails', 'application'
+  = stylesheet_link_tag "http://fonts.googleapis.com/css?family=Galdeano:400,700", :media => "screen"
+  = stylesheet_link_tag "screen.css"
+
+  %body
+    = haml :_nav
+    = yield

@@ -32,6 +32,11 @@ Diving Deeper
 * http://snippets.aktagon.com/snippets/322-How-to-test-a-Sinatra-webapp-with-Rspec
 * http://www.slideshare.net/oisin/simple-rest-services-with-sinatra
 * http://pragprog.com/screencasts/v-aksinatra/classy-web-development-with-sinatra
+* http://baldowl.github.com/2011/05/06/rough-simple-rack-csrf-extension-for-sinatra.html
+* http://www.sinatrarb.com/faq.html
+* http://stackoverflow.com/questions/2068148/contact-form-in-ruby-sinatra-and-haml
+* http://www.padrinorb.com/guides/application-helpers
+* http://stackoverflow.com/questions/3559824/what-is-a-very-simple-authentication-scheme-for-sinatra-rack
 
 # SuperModel
 
@@ -44,5 +49,15 @@ Diving Deeper
 * https://github.com/maccman/supermodel/blob/master/lib/supermodel/association.rb
 * http://yehudakatz.com/2010/01/10/activemodel-make-any-ruby-object-feel-like-activerecord/
 
+# AJAX
+
+* http://remysharp.com/2007/10/08/what-is-jsonp/
+* http://net.tutsplus.com/tutorials/javascript-ajax/5-ways-to-make-ajax-calls-with-jquery/
+* http://webhole.net/2009/11/28/how-to-read-json-with-javascript/
+* http://www.chazzuka.com/twitter-api-jquery-jsonp-how-to-229/
+
+# Backbone.js
+
+* http://documentcloud.github.com/backbone/
 
 # More to come soon!

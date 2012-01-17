@@ -1,0 +1,24 @@
+
+- form_for @location, @action || "/locations", :method => :POST do |f|
+  = f.error_messages
+  -#What is the proper way to implement error_messages, reference site was down earlier check again
+  = csrf_tag
+  %table{:align => :center}
+    %tr
+      %td= f.label :name, :caption => "Location Name:"
+      %td= f.text_field :name
+
+    %tr
+      %td= f.label :lat, :caption => "Latitude:"
+      %td= f.text_field :lat
+
+    %tr
+      %td= f.label :lon, :caption => "Longitude:"
+      %td= f.text_field :lon
+
+    %tr
+      %td 
+      %td
+        = f.submit
+        = link_to 'Cancel', '/locations'
+

@@ -1,0 +1,26 @@
+%script{:type => "text/javascript", :src => "http://maps.googleapis.com/maps/api/js?sensor=false" }
+
+:javascript
+  google.maps.event.addDomListener(window, 'load', function() { initialize_map("#{ @location.lat }", "#{ @location.lon }"); });
+
+
+.container
+  #map_canvas
+
+#floater
+  %p
+    %b Name:
+    = @location.name
+
+  %p
+    %b Latitude:
+    = @location.lat
+
+  %p
+    %b Longitude:
+    = @location.lon
+
+
+  = link_to 'Edit', "/locations/#{@location.id}/edit"
+  %span &nbsp;
+  = link_to 'Back', "/locations"

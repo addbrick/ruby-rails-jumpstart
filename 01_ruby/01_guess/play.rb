@@ -1,10 +1,11 @@
-require 'open4'
+require 'open3'
 
 # default to playing with a limit of 10
 limit = (ARGV.shift || "10").to_i
 
-# open a child process for the game using the Open4 library
+# open a child process for the game using the Open3 library
 status =
+<<<<<<< HEAD
 Open4::popen4("ruby guess.rb #{limit}") do |pid, child_stdin, child_stdout, child_stderr|
   puts ">>> pid        : #{ pid }"                # report the child pid for informational purposes
 
@@ -15,6 +16,21 @@ Open4::popen4("ruby guess.rb #{limit}") do |pid, child_stdin, child_stdout, chil
 
   until finished || (i > limit)                   # keep looping until we're done
     inline = child_stdout.readline.strip          # get input from the game process
+=======
+  Open3.popen3("ruby guess.rb #{limit}") do |child_stdin, child_stdout, child_stderr, wait_thr|
+    puts ">>> pid        : #{ wait_thr.pid }"       # report the child pid for informational purposes
+  
+    finished = false                                # we're just getting started!
+    i = 1                                           # let's start with a simple guess
+
+    until finished || (i > limit)                   # keep looping until we're done
+      inline = child_stdout.readline.strip          # get input from the game process
+
+      unless inline.match(/GUESS/)                  # make sure the game is asking what we expect
+        puts "Unexpected input! #{inline}"
+        exit                                        # if not ... exit
+      end
+>>>>>>> upstream/master
 
     unless inline.match(/GUESS/)                  # make sure the game is asking what we expect
       puts "Unexpected input! #{inline}"
@@ -50,9 +66,8 @@ Open4::popen4("ruby guess.rb #{limit}") do |pid, child_stdin, child_stdout, chil
         i -= ((i - lowNum) / 2).floor
       end
     end
+    puts ">>> exitstatus : #{ wait_thr.value }"
   end
   puts "Guessed #{numOfGuesses} times"
 end
 
-puts ">>> status     : #{ status.inspect }"
-puts ">>> exitstatus : #{ status.exitstatus }"

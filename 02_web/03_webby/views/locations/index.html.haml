@@ -1,0 +1,37 @@
+.centerbox
+
+  %h1 Locations
+
+  %p
+    = link_to 'New Location', '/locations/new'
+
+  %hr{:size => 1, :width => 300}
+
+  %table{:align => :center, :width => "80%"}
+    %tr
+      %th Name
+      %th Lat
+      %th Lon
+      %th
+      %th
+      %th
+
+    - @locations.each do |location|
+      %tr
+        %td= location.name
+        %td= location.lat
+        %td= location.lon
+        %td= link_to 'Show', "/locations/#{location.id}"
+        %td= link_to 'Edit', "/locations/#{location.id}/edit"
+        %td
+          - form_for location, "/locations/#{location.id}/delete", :id => "delete_#{location.id}", :method => :POST do |f|
+            = csrf_tag
+            = link_to 'Destroy', "javascript:$('#delete_#{location.id}').submit();", :confirm => "Are you sure?"
+
+          
+
+
+  %hr{:size => 1, :width => 300}
+  %br
+
+  %p Powered by Google Maps API
