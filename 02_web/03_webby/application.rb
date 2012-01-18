@@ -1,4 +1,3 @@
-#require 'bundler/setup'
 require 'sinatra'
 require 'sinatra/base'
 require 'sinatra/respond_to'
@@ -120,29 +119,50 @@ class Webby < Sinatra::Base
 
   get '/locations/new', :auth => :user do
     @location = Location.new
+    
     haml :'locations/new', :layout => :application # was edit, changed to new like it should be
   end
 
   get '/locations/:id', :auth => :user do
     @location = Location.find(params[:id])
+    
     haml :'locations/show', :layout => :application
   end
 
   get '/locations/:id/edit', :auth => :user do
     @location = Location.find(params[:id])
+    
     @action   = "/locations/#{params[:id]}/update"
     haml :'locations/edit', :layout => :application
   end
 
   post '/locations/?', :auth => :user do
-    @location = Location.create!(params[:location])
-    redirect to('/locations/' + @location.id)
+    @location = Location.new(params[:location])
+    
+    if @location.valid?
+      @location.save
+      redirect to('/locations/' + @location.id)
+    else
+      haml :'locations/new', :layout => :application
+    end
   end
 
   post '/locations/:id/update', :auth => :user do
-    @location = Location.find(params[:id])
-    @location.update_attributes!(params[:location])
-    redirect to('/locations/' + @location.id)
+    # wish I didn't have to create a new record just to check if update is valid
+    #  in production code I would write an updates_valid? method or change the 
+    #   update_attributes to not make them perenement until save is called
+    temp_loc = Location.new(params[:location])
+  
+    if temp_loc.valid?
+      temp_loc.destroy
+      @location = Location.find(params[:id])
+      @location.update_attributes(params[:location])
+      redirect to('/locations/' + @location.id)
+    else
+      @location = temp_loc
+      @action = "/locations/#{params[:id]}/update"
+      haml :'locations/edit', :layout => :application
+    end
   end
 
   post '/locations/:id/delete', :auth => :user do
@@ -174,14 +194,32 @@ class Webby < Sinatra::Base
   end
   
   post '/duckduckgo_queries/?', :auth => :user do
-    @query = DuckDuckGoQuery.create!(params[:duck_duck_go_query])
-    redirect to('/duckduckgo_queries/' + @query.id)
+    @query = DuckDuckGoQuery.new(params[:duck_duck_go_query])
+    
+    if @query.valid?
+      @query.save
+      redirect to('/duckduckgo_queries/' + @query.id)
+    else
+      haml :'duckduckgo_queries/new', :layout => :application
+    end
   end
 
   post '/duckduckgo_queries/:id/update', :auth => :user do
-    @query = DuckDuckGoQuery.find(params[:id])
-    @query.update_attributes!(params[:duck_duck_go_query])
-    redirect to('/duckduckgo_queries/' + @query.id)
+    # wish I didn't have to create a new record just to check if update is valid
+    #  in production code I would write an updates_valid? method or change the 
+    #   update_attributes to not make them perenement until save is called
+    temp_ddgquery = DuckDuckGoQuery.new(params[:duck_duck_go_query])
+    
+    if temp_ddgquery.valid?
+      temp_ddgquery.destroy
+      @query = DuckDuckGoQuery.find(params[:id])
+      @query.update_attributes!(params[:duck_duck_go_query])
+      redirect to('/duckduckgo_queries/' + @query.id)
+    else
+      @query = temp_ddgquery
+      @action = "/duckduckgo_queries/#{params[:id]}/update"
+      haml :'duckduckgo_queries/edit', :layout => :application
+    end
   end
 
   post '/duckduckgo_queries/:id/delete', :auth => :user do
@@ -217,14 +255,32 @@ class Webby < Sinatra::Base
   end
 
   post '/twitter_queries/?', :auth => :user do
-    @query = TwitterQuery.create!(params[:twitter_query])
-    redirect to('/twitter_queries/' + @query.id)
+    @query = TwitterQuery.new(params[:twitter_query])
+    
+    if @query.valid?
+      @query.save
+      redirect to('/twitter_queries/' + @query.id)
+    else
+      haml :'twitter_queries/new'
+    end
   end
 
   post '/twitter_queries/:id/update', :auth => :user do
-    @query = TwitterQuery.find(params[:id])
-    @query.update_attributes!(params[:twitter_query])
-    redirect to('/twitter_queries/' + @query.id)
+    # wish I didn't have to create a new record just to check if update is valid
+    #  in production code I would write an updates_valid? method or change the 
+    #   update_attributes to not make them perenement until save is called
+    temp_tquery = TwitterQuery.new(params[:twitter_query])
+    
+    if temp_tquery.valid?
+      temp_tquery.destroy
+      @query = TwitterQuery.find(params[:id])
+      @query.update_attributes!(params[:twitter_query])
+      redirect to('/twitter_queries/' + @query.id)
+    else
+      @query = temp_tquery
+      @action = "/twitter_queries/#{params[:id]}/update"
+      haml :'twitter_queries/edit'
+    end
   end
 
   post '/twitter_queries/:id/delete', :auth => :user do
@@ -245,21 +301,30 @@ class Webby < Sinatra::Base
   end
   
   post '/signup/?' do
-    @user = User.create!(params[:user])
-    session[:user_id] = @user.id
+    @user = User.new(params[:user])
     
-    redirect to ('/')
+    if @user.valid?
+      @user.save
+      session[:user_id] = @user.id
+      redirect to ('/')
+    else
+      haml :'signup', :layout => :application
+    end
   end
   
+  # Couldn't figure out how to display errors for login
+  #  tried doing similar thing as in updates above, but
+  #   it would show me errors as if I was signing up
   post "/login/?" do
     user = User.authenticate(params[:user])
-    
     unless user == nil
-     session[:user_id] = user.id
-     @user = User.find(session[:user_id])
+      @user = user
+      session[:user_id] = @user.id
+      #@user = User.find(session[:user_id])
+      redirect to ('/')
+    else
+      haml :'login', :layout => :application
     end
-    
-    redirect to ('/')
   end
   
   get "/logout/?" do
