@@ -1,5 +1,5 @@
 function runQuery() {
-  var queryUrl = "http://search.twitter.com/search.json?q=" + $('#query').text().trim().replace(/\s/g,"%20") + '&callback=?';
+  var queryUrl = "http://search.twitter.com/search.json?q=" + escape($('#query').text()) + '&callback=?';
   $.getJSON(queryUrl, function(json){
     $('img').remove();
     $.each(json.results, function(i, tweet){
