@@ -8,6 +8,8 @@
   %h1= @query.name
 
   = image_tag response['Image'] unless response['Image'] == ""
+  
+  %br
 
   = link_to 'Edit', "/duckduckgo_queries/#{@query.id}/edit", :style => "margin-right:5px;"
   = link_to 'Back', "/duckduckgo_queries"

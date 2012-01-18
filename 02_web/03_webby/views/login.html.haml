@@ -1,0 +1,26 @@
+.centerbox
+
+  %h1 Login
+
+  %hr{:size => 1, :width => 300}
+
+  - form_for :user, @action || "/login", :method => :POST do |f|
+    = error_messages_for :user
+    -#What is the proper way to implement error_messages, reference site was down earlier check again
+    = csrf_tag
+    %table{:align => :center}
+      %tr
+        %td= f.label :email, :caption => "Email:"
+        %td= f.text_field :email
+
+      %tr
+        %td= f.label :password, :caption => "Password:"
+        %td= f.password_field :password
+     
+      %tr
+        %td 
+        %td
+          = f.submit
+          = link_to 'Cancel', '/'
+
+  %hr{:size => 1, :width => 300}

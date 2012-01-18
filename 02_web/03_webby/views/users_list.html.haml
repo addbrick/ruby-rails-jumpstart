@@ -1,0 +1,24 @@
+.centerbox
+
+  %h1 Users
+
+  %hr{:size => 1, :width => 300}
+	
+  %table{:align => :center, :width => "80%"}
+    %tr
+      %th Name
+      %th Email
+      - unless session[:user_id] == nil
+        %th
+   
+    - @users.each do |user|
+      %tr
+        %td= user.name
+        %td= user.email
+        - unless session[:user_id] == nil
+          %td
+            - form_for user, "/user/#{user.id}/delete", :id => "delete_#{user.id}", :method => :POST do |f|
+              = csrf_tag
+              = link_to 'Destroy', "javascript:$('#delete_#{user.id}').submit();", :confirm => "Are you sure?"
+
+  %hr{:size => 1, :width => 300}

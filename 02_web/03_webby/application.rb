@@ -18,8 +18,8 @@ class Location < SuperModel::Base
   attributes :name, :lat, :lon
   
   validates :name, :presence => true
-  validates :lat, :numericality => true
-  validates :lon, :numericality => true
+  validates :lat, :numericality => true, :presence => true
+  validates :lon, :numericality => true, :presence => true
 end
 
 class DuckDuckGoQuery < SuperModel::Base
@@ -38,6 +38,24 @@ class TwitterQuery < SuperModel::Base
   validates :query, :presence => true
 end
 
+class User < SuperModel::Base
+  include SuperModel::RandomID
+  attributes :name, :email, :password
+  
+  validates :name, :password, :presence => true
+  validates :email, :presence => true, :uniqueness => true
+  
+  def self.authenticate(userparams)
+    user = User.find_by_attribute(:email, userparams[:email])
+    
+    unless user == nil
+      return user if user.password == userparams[:password]
+    end
+    
+    return nil
+  end
+end
+
 # ----------------------------------------------------
 # web app
 # ----------------------------------------------------
@@ -45,12 +63,21 @@ class Webby < Sinatra::Base
   register Sinatra::RespondTo                                                   # routes .html to haml properly
   register Padrino::Helpers                                                     # enables link and form helpers
 
+  set :session => true
   set :views, File.join(File.dirname(__FILE__), 'views')                        # views directory for haml templates
   set :public_directory, File.dirname(__FILE__) + 'public'                      # public web resources (images, etc)
 
   configure do                                                                  # use rack csrf to prevent cross-site forgery
     use Rack::Session::Cookie, :secret => "in a real application we would use a more secure cookie secret"
     use Rack::Csrf, :raise => true
+  end
+
+  register do
+    def auth (type)
+      condition do
+        redirect "/login" unless send("is_#{type}?")
+      end
+    end
   end
 
   helpers do                                                                    # csrf link/tag helpers
@@ -60,6 +87,18 @@ class Webby < Sinatra::Base
 
     def csrf_tag
       Rack::Csrf.csrf_tag(env)
+    end
+    
+    def is_user?
+      @user != nil
+    end
+  end
+
+  before do
+    @user = unless User.exists?(session[:user_id])
+      nil
+    else
+      User.find(session[:user_id])
     end
   end
 
@@ -74,85 +113,85 @@ class Webby < Sinatra::Base
   end
   
   # --- Core Web Application : locations ---
-  get '/locations/?' do # What is the point of having '/?' at the end of the url? What other url are we trying to capture?
+  get '/locations/?', :auth => :user do
     @locations = Location.all
     haml :'locations/index', :layout => :application
   end
 
-  get '/locations/new' do
+  get '/locations/new', :auth => :user do
     @location = Location.new
     haml :'locations/new', :layout => :application # was edit, changed to new like it should be
   end
 
-  get '/locations/:id' do
+  get '/locations/:id', :auth => :user do
     @location = Location.find(params[:id])
     haml :'locations/show', :layout => :application
   end
 
-  get '/locations/:id/edit' do
+  get '/locations/:id/edit', :auth => :user do
     @location = Location.find(params[:id])
     @action   = "/locations/#{params[:id]}/update"
     haml :'locations/edit', :layout => :application
   end
 
-  post '/locations/?' do # What is the point of having '/?' at the end of the url? What other url are we trying to capture?
+  post '/locations/?', :auth => :user do
     @location = Location.create!(params[:location])
     redirect to('/locations/' + @location.id)
   end
 
-  post '/locations/:id/update' do
+  post '/locations/:id/update', :auth => :user do
     @location = Location.find(params[:id])
     @location.update_attributes!(params[:location])
     redirect to('/locations/' + @location.id)
   end
 
-  post '/locations/:id/delete' do
+  post '/locations/:id/delete', :auth => :user do
     @location = Location.find(params[:id])
     @location.destroy
     redirect to('/locations')
   end
 
   # --- Core Web Application : duckduckgo queries ---
-  get '/duckduckgo_queries/?' do # What is the point of having '/?' at the end of the url? What other url are we trying to capture?
+  get '/duckduckgo_queries/?', :auth => :user do
     @queries = DuckDuckGoQuery.all
     haml :'duckduckgo_queries/index', :layout => :application
   end
   
-  get '/duckduckgo_queries/new' do
+  get '/duckduckgo_queries/new', :auth => :user do
     @query = DuckDuckGoQuery.new
     haml :'duckduckgo_queries/new', :layout => :application
   end
   
-  get '/duckduckgo_queries/:id' do
+  get '/duckduckgo_queries/:id', :auth => :user do
     @query = DuckDuckGoQuery.find(params[:id])
     haml :'duckduckgo_queries/show', :layout => :application
   end
   
-  get '/duckduckgo_queries/:id/edit' do
+  get '/duckduckgo_queries/:id/edit', :auth => :user do
     @query  = DuckDuckGoQuery.find(params[:id])
     @action = "/duckduckgo_queries/#{params[:id]}/update"
     haml :'duckduckgo_queries/edit', :layout => :application
   end
   
-  post '/duckduckgo_queries/?' do # What is the point of having '/?' at the end of the url? What other url are we trying to capture?
+  post '/duckduckgo_queries/?', :auth => :user do
     @query = DuckDuckGoQuery.create!(params[:duck_duck_go_query])
     redirect to('/duckduckgo_queries/' + @query.id)
   end
 
-  post '/duckduckgo_queries/:id/update' do
+  post '/duckduckgo_queries/:id/update', :auth => :user do
     @query = DuckDuckGoQuery.find(params[:id])
     @query.update_attributes!(params[:duck_duck_go_query])
     redirect to('/duckduckgo_queries/' + @query.id)
   end
 
-  post '/duckduckgo_queries/:id/delete' do
+  post '/duckduckgo_queries/:id/delete', :auth => :user do
     @query = DuckDuckGoQuery.find(params[:id])
     @query.destroy
     redirect to('/duckduckgo_queries')
   end
 
   # --- Core Web Application : twitter queries ---
-  get '/twitter_queries/?' do # What is the point of having '/?' at the end of the url? What other url are we trying to capture?
+  get '/twitter_queries/?', :auth => :user do
     @queries = TwitterQuery.all
     if request.xhr?
       haml :'twitter_queries/index'
@@ -161,39 +200,104 @@ class Webby < Sinatra::Base
     end
   end
   
-  get '/twitter_queries/new' do
+  get '/twitter_queries/new', :auth => :user do
     @query = TwitterQuery.new
-    haml :'twitter_queries/new'#, :layout => :application
+    haml :'twitter_queries/new'
   end
   
-  get '/twitter_queries/:id' do
+  get '/twitter_queries/:id', :auth => :user do
     @query = TwitterQuery.find(params[:id])
-    haml :'twitter_queries/show'#, :layout => :application
+    haml :'twitter_queries/show'
   end
 
-  get '/twitter_queries/:id/edit' do
+  get '/twitter_queries/:id/edit', :auth => :user do
     @query  = TwitterQuery.find(params[:id])
     @action = "/twitter_queries/#{params[:id]}/update"
-    haml :'twitter_queries/edit'#, :layout => :application
+    haml :'twitter_queries/edit'
   end
 
-  post '/twitter_queries/?' do # What is the point of having '/?' at the end of the url? What other url are we trying to capture?
+  post '/twitter_queries/?', :auth => :user do
     @query = TwitterQuery.create!(params[:twitter_query])
     redirect to('/twitter_queries/' + @query.id)
   end
 
-  post '/twitter_queries/:id/update' do
+  post '/twitter_queries/:id/update', :auth => :user do
     @query = TwitterQuery.find(params[:id])
     @query.update_attributes!(params[:twitter_query])
     redirect to('/twitter_queries/' + @query.id)
   end
 
-  post '/twitter_queries/:id/delete' do
+  post '/twitter_queries/:id/delete', :auth => :user do
     @query = TwitterQuery.find(params[:id])
     @query.destroy
     redirect to('/twitter_queries')
   end
   
+  
+  # --- Core Web Application : user ---
+  get '/signup/?' do
+    @user = User.new
+    haml :'signup', :layout => :application
+  end
+  
+  get '/login/?' do
+    haml :'login', :layout => :application
+  end
+  
+  post '/signup/?' do
+    @user = User.create!(params[:user])
+    session[:user_id] = @user.id
+    
+    redirect to ('/')
+  end
+  
+  post "/login/?" do
+    user = User.authenticate(params[:user])
+    
+    unless user == nil
+     session[:user_id] = user.id
+     @user = User.find(session[:user_id])
+    end
+    
+    redirect to ('/')
+  end
+  
+  get "/logout/?" do
+    @user = nil
+    session[:user_id] = nil
+    redirect to ('/')
+  end
+  
+  post '/user/:id/delete' do
+    if session[:user_id] == params[:id]
+      @user = nil
+      session[:user_id] = nil
+    end
+    
+    user = User.find(params[:id])
+    user.destroy
+    redirect to('/')
+  end
+  
+  get '/users_list/?' do
+    @users = User.all
+    haml :'users_list', :layout => :application
+  end
+  
+  # --- nuke command to delete all data ---
+  get '/nuke/:go_code', :auth => :user do
+    @user = nil
+    session[:user_id] = nil
+    
+    if params[:go_code] == "yesireallymeanit"
+      TwitterQuery.all.each { |t| t.destroy }
+      DuckDuckGoQuery.all.each { |d| d.destroy }
+      Location.all.each { |l| l.destroy }
+      User.all.each { |u| u.destroy }
+    end
+    
+    redirect to('/')
+  end
 
   run! if app_file == $0
 end

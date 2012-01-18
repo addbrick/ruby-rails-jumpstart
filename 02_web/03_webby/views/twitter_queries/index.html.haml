@@ -1,9 +1,9 @@
--#= render :haml, 'twitter_queries/index.js.haml'
-
-= javascript_include_tag 'twitter'
+= javascript_include_tag 'twitter', 'twitter-text'
 
 .centerbox
-  
+  -#= render :haml, :'twitter_queries/index.js.haml'
+
+
   %h1 Twitter Queries
   
   %p

@@ -1,6 +1,6 @@
 
 - form_for @query, @action || "/duckduckgo_queries", :method => :POST do |f|
-  = f.error_messages
+  = error_messages_for @query
   -#What is the proper way to implement error_messages, reference site was down earlier check again
   = csrf_tag
   %table{:align => :center}

@@ -1,17 +1,24 @@
+-# session[:user_id] = nil # uncomment to reset session[:user_id] to nil if it was left over from last session
 .container#nav
 
   .left
     = link_to "Home", '/'
     &nbsp;
-    = link_to "Locations", '/locations'
-    &nbsp;
     = link_to "About", '/about'
     &nbsp;
-    = link_to "DuckDuckGo", '/duckduckgo_queries'
-    &nbsp;
-    = link_to "Twitter", '/twitter_queries'
-
+    - unless session[:user_id] == nil
+      = link_to "Locations", '/locations'
+      &nbsp;
+      = link_to "DuckDuckGo", '/duckduckgo_queries'
+      &nbsp;
+      = link_to "Twitter", '/twitter_queries'
+      &nbsp;
+    = link_to "Users List", '/users_list'
+     
   .right
-    Welcome, User!
-    %span &nbsp;
-    %span &nbsp;
+    - if session[:user_id] == nil
+      = link_to "Sign Up", '/signup', :class => 'userBtn'
+      = link_to "Login", '/login', :class => 'userBtn'
+    - else
+      %span{:class => :'userBtn'}= "Welcome, #{@user.name}!"
+      = link_to "Logout", '/logout', :class => 'userBtn'

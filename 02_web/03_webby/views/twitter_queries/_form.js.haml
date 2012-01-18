@@ -1,6 +1,5 @@
-
 - form_for @query, @action || "/twitter_queries", :remote => true, :'data-type' => 'html', :method => :POST do |f|
-  = f.error_messages
+  = error_messages_for @query
   -#What is the proper way to implement error_messages, reference site was down earlier check again
   = csrf_tag
   %table{:align => :center}

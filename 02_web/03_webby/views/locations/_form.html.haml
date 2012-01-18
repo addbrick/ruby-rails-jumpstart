@@ -1,6 +1,10 @@
 
 - form_for @location, @action || "/locations", :method => :POST do |f|
+  -#= error_message_on @location, :name
+  -#= error_message_on @location, :lat
+  -#= error_message_on @location, :lon
   = f.error_messages
+  -# puts @location.inspect
   -#What is the proper way to implement error_messages, reference site was down earlier check again
   = csrf_tag
   %table{:align => :center}

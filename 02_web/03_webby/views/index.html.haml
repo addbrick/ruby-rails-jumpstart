@@ -5,14 +5,20 @@
 %br
 %br
 
-.centerbox
-  %h2= link_to "Locations", '/locations'
-  %p Check out some rad saved locations
+- if session[:user_id] == nil
+  .centerbox
+    %h2= link_to "Sign Up", '/signup'
+    %h2= link_to "Login", '/login'
+
+- else
+  .centerbox
+    %h2= link_to "Locations", '/locations'
+    %p Check out some rad saved locations
+
+  .centerbox
+    %h2= link_to "DuckDuckGo Queries", '/duckduckgo_queries'
+    %p Someday this will work!
   
-.centerbox
-  %h2= link_to "DuckDuckGo Queries", '/duckduckgo_queries'
-  %p Someday this will work!
-  
-.centerbox
-  %h2= link_to "Twitter Queries", '/twitter_queries'
-  %p Someday this will work!
+  .centerbox
+    %h2= link_to "Twitter Queries", '/twitter_queries'
+    %p Someday this will work!

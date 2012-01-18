@@ -1,11 +1,3 @@
-/ NEED TO CHANGE THIS TO SHOW TWITTER QUERY
-
-
--response = open("http://search.twitter.com/search.json?q=" + URI.escape(@query.query)) do |v|
-  -input = v.read
-  -#puts input
-  -JSON.parse(input)
-
 %h1= @query.name
 
 = link_to 'Edit', "/twitter_queries/#{@query.id}/edit", :remote => true, :'data-type' => 'html', :style => "margin-right:5px;"
@@ -13,38 +5,8 @@
 
 %hr{:size => 1, :width => 300}
 
-%h2= @query.query
+%h2{:id => "query"}= @query.query
 
 %hr{:size => 1, :width => 500}
 
--response['results'].each do |t|
-  %h2= t['from_user_name']
-  %h3= "@#{t['from_user']}"
-
-  %p= t['text']
-
-  %p= t['created_at']
-
-  %hr{:size => 1, :width => 300}
-
--#.centerbox
-  / REPLACE THIS WITH TWITTER STUFF
-  / %hr{:size => 1, :width => 300}
-  / 
-  / %h2
-  /   %a{:href => "http://duckduckgo.com/?q=" + @query.query}= @query.query
-  / 
-  / -#unless response['Definition'] == ""
-  /   %p= response['Definition']
-  / 
-  / %a{:href => response['AbstractURL']}= response['AbstractURL']
-  / 
-  / %hr{:size => 1, :width => 500}
-  / 
-  / -#response['RelatedTopics'].each do |rt|
-  /   -#unless rt['Topics']
-  /     %p= rt['Text']
-  /     %a{:href => rt['FirstURL']}= rt['FirstURL']
-  /     %hr{:size => 1, :width => 300}
-  / 
-  / %p End
+= image_tag 'loading.gif', :alt => :'Loading....'
