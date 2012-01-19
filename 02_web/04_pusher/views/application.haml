@@ -1,0 +1,16 @@
+%html
+  %head
+    %meta{:content => "text/html; charset=utf-8", "http-equiv" => "Content-Type"}/
+    %meta{:content => "IE=Edge;chrome=1", "http-equiv" => "X-UA-Compatible"}/
+    %meta{:content => "en-US", "http-equiv" => "Content-Language"}/
+    %meta{:content => "width=device-width, initial-scale=1", "name" => "viewport"}/
+   
+  %title Pusher
+
+  = javascript_include_tag ['jquery', 'underscore', 'rails', 'pusher', 'backbone', 'backpusher', 'twitter-text', 'application']
+  = stylesheet_link_tag "screen.css"
+
+  %body
+    #infoDisplay
+      %span{:id => "num_messages"} 0
+    = yield

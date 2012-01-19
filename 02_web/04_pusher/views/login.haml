@@ -1,0 +1,16 @@
+
+#app
+  .title
+    %p
+      %input#the_url{:type=>:text, :readonly=>:readonly, :value=>"Welcome! Please choose a Handle"}
+
+  .content
+    #create
+      %form{:action => "/login", :method => :POST}
+        %table{:align => :center, :width => "100%"}
+          %tr
+            %td{:align => :center}
+              %input#screen_name{:name => :screen_name, :type => :text, :placeholder => "YourScreenName..."}
+              %input#login{:type => :submit, :value => "Let's do it!"}
+
+

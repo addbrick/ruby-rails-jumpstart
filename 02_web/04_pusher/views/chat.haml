@@ -1,0 +1,49 @@
+
+:javascript
+  if (!window.app) var app = window.app = {};
+  window.app.chat_path = '/#{ @a_chat.token }';
+  window.app.chat_channel = '#{ @a_chat.channel_name }';
+  var me = '#{ request.cookies["user_name"] }';
+  _.templateSettings = {
+    interpolate : /\{\{(.+?)\}\}/g,
+    escape : /\{\{\{(.+?)\}\}\}/g,
+    evaluate : /\{\{\[(.+?)\]\}\}/g,
+  };
+- my_name = request.cookies["user_name"]
+-# message = {{ message }}
+#app
+
+  .title
+    %p
+      %input#the_url{:type=>:text, :readonly=>:readonly, :value=>"#{ url_for('/' + @a_chat.token, :full) }"}
+
+    %p#usersInChat
+      %span#presence-stats
+      %span#presence-all
+
+  .content
+    #create
+      %input#new-chat{:placeholder=>"Type your message here...", :type=>"text"}
+      %span.ui-tooltip-top
+        Type your message here, then press Enter to send
+    #chat-list
+
+
+%script#presence-item-template{:type => "text/template"}
+  %a{:id => "presence-item-{{ id }}", :class=>"author_span {{[ you ? 'you' : '' ]}}", :href => "http://twitter.com/{{ name }}"}
+    %img{:src => "http://twitter.com/api/users/profile_image/{{ name }}", :alt => "."}
+    {{ name }}
+
+%script#presence-stats-template{:type => "text/template"}
+  %span.list_desc
+    %span.number
+      {{ size }}
+      online :
+
+%script#chat-item-template{:type=>"text/template"}
+  .item-span
+    {{ message }}
+  .author-span
+    {{when}} by {{ author }}
+  -# if message.iclude?('@' + my_name)
+    %audio{:src => "audio/Cow_And_Bell.mp3"}
