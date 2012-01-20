@@ -7,19 +7,45 @@ var maxMessages = 20; // The maximum number of messages you want to be displayed
 
 ;$(function(){
   
+  $('.sizeAdjuster input').change(function(){
+    var val = this.value;
+    $('#chat-list img').each(function(i, ment){
+      ment = $(ment);
+      ment.height(val);
+      ment.width(val);
+    });
+  });
+  
+  $('.debugMessages').click(function(){
+    $(this).children('.infoDisplay').toggle();
+  });
+  
+  // $('.sizeAdjuster a').first().click(function(){
+  //   $('#chat-list img').each(function(i, ment){
+  //     ment = $(ment);
+  //     ment.height(ment.height() - 1);
+  //     ment.width(ment.width() - 1);
+  //   });
+  // });
+  // $('.sizeAdjuster a').last().click(function(){
+  //   $('#chat-list img').each(function(i, ment){
+  //     ment = $(ment);
+  //     ment.height(ment.height() + 1);
+  //     ment.width(ment.width() + 1);
+  //   });
+  // });
+  
   function addToInfoDisplay(infoToDisplay) {
-    $('#infoDisplay').children().first().after('<br><span>' + infoToDisplay + '</span>');
+    $('.infoDisplay').children().first().after('<br><span>' + infoToDisplay + '</span>');
   }
   
-  $('body').height($(window).height());
-  $('#chat-list').height($(window).height() - $('#chat-list').position().top);
-  $('#infoDisplay').height($(window).height());
-
-  $(window).resize(function resizeChatList(){
+  var resizeChatList = function resizeChatList() {
     $('body').height($(window).height());
     $('#chat-list').height($(window).height() - $('#chat-list').position().top);
-    $('#infoDisplay').height($(window).height());
-  });
+    $('.infoDisplay').height($(window).height() - 10);
+  }
+
+  $(window).resize(resizeChatList);
   //Tried getting it to resize once images load, but nothing seems to be working.
   
   window.app = window.app || {};
@@ -80,14 +106,20 @@ var maxMessages = 20; // The maximum number of messages you want to be displayed
 
     render: function() {
       var model = this.model.toJSON();
-      //addToInfoDisplay(this.model.get('message'));
-      //this.model.set({message: twttr.txt.autoLink(this.model.get('message'))});
+      
+      var addSoundP = false;
+      if (model.message.indexOf("@" + me) > -1) addSoundP = true;
+      
+      model.message = twttr.txt.autoLink(model.message);
       $(this.el).html(this.template(model));
       this.el.id = "chat-item-" + this.model.get("id");
       $(this.el).addClass('item');
-      var message = twttr.txt.autoLink(this.model.get('message'));
-      addToInfoDisplay(message);
-      $(this.el.firstChild).html(message);
+      addToInfoDisplay(model.message);
+      //$(this.el.firstChild).html(this.model.get('message'));
+      if (addSoundP) {
+        $(this.el).append('<a class="playSound" href="#" onclick="$(\'#bell\')[0].play();" ><img src="images/sound.png" /></a>');
+        $('#bell')[0].play();
+      }
       return this;
     }
   });
@@ -115,7 +147,7 @@ var maxMessages = 20; // The maximum number of messages you want to be displayed
       var chat_list = this.$('#chat-list');
       if (chat_list.children().length >= maxMessages) {
         chat_list.children().last().remove();
-        $('#infoDisplay').children().last().remove();
+        $('.infoDisplay').children().last().remove();
       }
       chat_list.prepend(view.render().el);
       $('#num_messages').text(chat_list.children().length);
@@ -189,9 +221,9 @@ var maxMessages = 20; // The maximum number of messages you want to be displayed
   function add_member(member) {
     if ($("#presence-item-" + member.id).exists()) return;
     $('#presence-all').prepend(presenceItemTemplate({
-        id : member.id,
-        name : member.info.nick,
-        you : (member.id == me)
+      id : member.id,
+      name : member.info.nick,
+      you : (member.id == me)
     }));
   }
 

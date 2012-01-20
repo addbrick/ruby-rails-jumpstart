@@ -93,12 +93,14 @@ class DemoApp < Sinatra::Base
 
   # items index
   get '/:token/items.json' do
+    puts "get '/:token/items.json'"
     a_chat = Chat.find_by_token(params[:token])
     (a_chat ? a_chat.messages : []).map {|x| x.attributes}.to_json
   end
 
   # items create
   post '/:token/items.json' do
+    puts "post '/:token/items.json'"
     a_chat = Chat.find_by_token(params[:token])
     input = JSON.parse(request.body.read)
     item = ChatMessage.create!({

@@ -194,7 +194,6 @@ if (!window.twttr) {
       ')'                                                          +
     ')'
   , 'gi');
-
   twttr.txt.regexen.validTcoUrl = /^https?:\/\/t\.co\/[a-z0-9]+/i;
 
   // These URL validation pattern strings are based on the ABNF from RFC 3986
@@ -437,45 +436,65 @@ if (!window.twttr) {
         urlEntities[options.urlEntities[i].url] = options.urlEntities[i];
       }
     }
-
+    
     delete options.suppressNoFollow;
     delete options.suppressDataScreenName;
     delete options.listClass;
     delete options.usernameClass;
     delete options.usernameUrlBase;
     delete options.listUrlBase;
-
+    
+    //http://s3.amazonaws.com/data.tumblr.com/tumblr_lwf1wn1Xef1qbytl6o1_1280.jpg
     return text.replace(twttr.txt.regexen.extractUrl, function(match, all, before, url, protocol, port, domain, path, queryString) {
       var tldComponents;
+      
+      // console.log("start");
+      //       console.log("all: " + all);
+      //       console.log("url: " + url);
+      //       console.log("1 matched: " + match);
+      //       if (/(\.(png|jpg|gif))$/.test(match)) {
+      //         console.log("2 match: " + match);
+      //       }
+      
+      var htmlAttrs = "";
+      var after = "";
+      for (var k in options) {
+        htmlAttrs += stringSupplant(" #{k}=\"#{v}\" ", {k: k, v: options[k].toString().replace(/"/, "&quot;").replace(/</, "&lt;").replace(/>/, "&gt;")});
+      }
 
-      if (protocol) {
-        var htmlAttrs = "";
-        var after = "";
-        for (var k in options) {
-          htmlAttrs += stringSupplant(" #{k}=\"#{v}\" ", {k: k, v: options[k].toString().replace(/"/, "&quot;").replace(/</, "&lt;").replace(/>/, "&gt;")});
-        }
+      // In the case of t.co URLs, don't allow additional path characters.
+      if (url.match(twttr.txt.regexen.validTcoUrl)) {
+        console.log("changed url-----------------------------");
+        url = RegExp.lastMatch;
+        after = RegExp.rightContext;
+      }
 
-        // In the case of t.co URLs, don't allow additional path characters.
-        if (url.match(twttr.txt.regexen.validTcoUrl)) {
-          url = RegExp.lastMatch;
-          after = RegExp.rightContext;
-        }
-
-        var d = {
-          before: before,
-          htmlAttrs: htmlAttrs,
-          url: twttr.txt.htmlEscape(url),
-          after: after
-        };
-        if (urlEntities && urlEntities[url] && urlEntities[url].display_url) {
-          d.displayUrl = twttr.txt.htmlEscape(urlEntities[url].display_url);
-        } else {
-          d.displayUrl = d.url;
-        }
-
-        return stringSupplant("#{before}<a href=\"#{url}\"#{htmlAttrs}>#{displayUrl}</a>#{after}", d);
+      var d = {
+        before: before,
+        htmlAttrs: htmlAttrs,
+        url: twttr.txt.htmlEscape(url),
+        after: after
+      };
+      if (urlEntities && urlEntities[url] && urlEntities[url].display_url) {
+        d.displayUrl = twttr.txt.htmlEscape(urlEntities[url].display_url);
       } else {
-        return all;
+        d.displayUrl = d.url;
+        if (!protocol) d.url = "http://" + d.url;
+      }
+
+      // console.log("protocol: " + protocol);
+      //       console.log("htmlAttrs: " + htmlAttrs);
+      //       console.log("url: " + url);
+      //       console.log("twttr.txt.htmlEscape(url): " + twttr.txt.htmlEscape(url));
+      //       console.log("after: " + after);
+      //       console.log("before: " + before);
+      //       console.log("end");
+      
+      if (/(\.(png|jpg|gif))$/.test(match)) {
+        d.imgSetSize = 'style="height: ' + $('.sizeAdjuster input')[0].value + 'px; width: ' + $('.sizeAdjuster input')[0].value + 'px;"';
+        return stringSupplant("#{before}<a href=\"#{url}\"#{htmlAttrs}><img class=\"inMessageImage\" src=\"#{url}\" alt=\"#{displayUrl}\" #{imgSetSize}/></a>#{after}", d);
+      } else {
+        return stringSupplant("#{before}<a href=\"#{url}\"#{htmlAttrs}>#{displayUrl}</a>#{after}", d);
       }
     });
   };
