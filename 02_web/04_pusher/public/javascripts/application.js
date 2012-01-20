@@ -9,7 +9,7 @@ var maxMessages = 20; // The maximum number of messages you want to be displayed
   
   $('.sizeAdjuster input').change(function(){
     var val = this.value;
-    $('#chat-list img').each(function(i, ment){
+    $(this).parents('.app').find('.chat-list img:not(.sound)').each(function(i, ment){
       ment = $(ment);
       ment.height(val);
       ment.width(val);
@@ -21,27 +21,28 @@ var maxMessages = 20; // The maximum number of messages you want to be displayed
   });
   
   // $('.sizeAdjuster a').first().click(function(){
-  //   $('#chat-list img').each(function(i, ment){
+  //   $('.chat-list img').each(function(i, ment){
   //     ment = $(ment);
   //     ment.height(ment.height() - 1);
   //     ment.width(ment.width() - 1);
   //   });
   // });
   // $('.sizeAdjuster a').last().click(function(){
-  //   $('#chat-list img').each(function(i, ment){
+  //   $('.chat-list img').each(function(i, ment){
   //     ment = $(ment);
   //     ment.height(ment.height() + 1);
   //     ment.width(ment.width() + 1);
   //   });
   // });
   
-  function addToInfoDisplay(infoToDisplay) {
-    $('.infoDisplay').children().first().after('<br><span>' + infoToDisplay + '</span>');
+  // Must supply a room, so it knows which infoDisplay to add to
+  function addToInfoDisplay(infoToDisplay, room) {
+    $('#' + room).find('.infoDisplay').children().first().after('<br><span>' + infoToDisplay + '</span>');
   }
   
   var resizeChatList = function resizeChatList() {
     $('body').height($(window).height());
-    $('#chat-list').height($(window).height() - $('#chat-list').position().top);
+    $('.chat-list').height($(window).height() - $('.chat-list').position().top);
     $('.infoDisplay').height($(window).height() - 10);
   }
 
@@ -60,6 +61,7 @@ var maxMessages = 20; // The maximum number of messages you want to be displayed
     EMPTY: '[nil]',
 
     initialize: function() {
+      console.log('initialize');
       if (!this.get('message')) {
         this.set({'message': this.EMPTY});
       }
@@ -69,6 +71,7 @@ var maxMessages = 20; // The maximum number of messages you want to be displayed
   app.ChatList = Backbone.Collection.extend({
     model: app.Chat,
     url: function() {
+      console.log(app.chat_path);
       return app.chat_path + '/items.json';
     },
     comparator: function(item) {
@@ -110,14 +113,14 @@ var maxMessages = 20; // The maximum number of messages you want to be displayed
       var addSoundP = false;
       if (model.message.indexOf("@" + me) > -1) addSoundP = true;
       
-      model.message = twttr.txt.autoLink(model.message);
+      model.message = twttr.txt.autoLink(model.message, {room: model.room});
       $(this.el).html(this.template(model));
       this.el.id = "chat-item-" + this.model.get("id");
       $(this.el).addClass('item');
-      addToInfoDisplay(model.message);
+      addToInfoDisplay(model.message, model.room);
       //$(this.el.firstChild).html(this.model.get('message'));
       if (addSoundP) {
-        $(this.el).append('<a class="playSound" href="#" onclick="$(\'#bell\')[0].play();" ><img src="images/sound.png" /></a>');
+        $(this.el).append('<a class="playSound" href="#" onclick="$(\'#bell\')[0].play();" ><img class="sound" src="images/sound.png" /></a>');
         $('#bell')[0].play();
       }
       return this;
@@ -125,7 +128,7 @@ var maxMessages = 20; // The maximum number of messages you want to be displayed
   });
 
   app.AppView = Backbone.View.extend({
-    el: $('#app'),
+    //el: $('.app'),
 
     events: {
       'keypress #new-chat': 'createOnEnter',
@@ -143,14 +146,18 @@ var maxMessages = 20; // The maximum number of messages you want to be displayed
     },
 
     addOne: function(item) {
+      if (item.attributes.room != this.el[0].id) {
+        return;
+      }
       var view = new app.ChatView({model: item});
-      var chat_list = this.$('#chat-list');
+      //var roomSelector = "#" + view.model.attributes.room + ".app";
+      var chat_list = this.$('.chat-list');//roomSelector + ' .chat-list');
       if (chat_list.children().length >= maxMessages) {
         chat_list.children().last().remove();
-        $('.infoDisplay').children().last().remove();
+        $(this.el).find('.infoDisplay').children().last().remove();
       }
       chat_list.prepend(view.render().el);
-      $('#num_messages').text(chat_list.children().length);
+      $(this.el).find('#num_messages').text(chat_list.children().length);
     },
 
     removeOne: function(item) {
@@ -158,10 +165,13 @@ var maxMessages = 20; // The maximum number of messages you want to be displayed
     },
 
     newAttributes: function() {
+      console.log(this);
       return {
         message:this.input.val(),
         when:new Date().toString(),
-        author:me};
+        author:me,
+        room: this.el[0].id
+      };
     },
 
     createOnEnter: function(e) {
@@ -199,7 +209,9 @@ var maxMessages = 20; // The maximum number of messages you want to be displayed
     }
   });
 
-  window.AppInstance = new app.AppView;
+  window.AppInstance = $('.app').each(function(i, a) {
+    new app.AppView({el: $(a)});
+  });
 
   Pusher.log = function() {
     if (window.console) window.console.log.apply(window.console, arguments);
@@ -210,17 +222,17 @@ var maxMessages = 20; // The maximum number of messages you want to be displayed
   
   // FIXME: turn this into a backbone model someday
   var update_members = function() {
-    $('#presence-all').html("");
+    $('.presence-all').html("");
     pchannel.members.each(add_member);
   
-    $('#presence-stats').html(presenceStatsTemplate({
+    $('.presence-stats').html(presenceStatsTemplate({
         size : _(pchannel.members._members_map).keys().length
     }));
   }
   
   function add_member(member) {
     if ($("#presence-item-" + member.id).exists()) return;
-    $('#presence-all').prepend(presenceItemTemplate({
+    $('.presence-all').prepend(presenceItemTemplate({
       id : member.id,
       name : member.info.nick,
       you : (member.id == me)

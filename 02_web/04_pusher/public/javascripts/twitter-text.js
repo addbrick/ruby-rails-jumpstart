@@ -491,7 +491,8 @@ if (!window.twttr) {
       //       console.log("end");
       
       if (/(\.(png|jpg|gif))$/.test(match)) {
-        d.imgSetSize = 'style="height: ' + $('.sizeAdjuster input')[0].value + 'px; width: ' + $('.sizeAdjuster input')[0].value + 'px;"';
+        var room = $("#" + options.room);
+        d.imgSetSize = 'style="height: ' + room.find('.sizeAdjuster input')[0].value + 'px; width: ' + room.find('.sizeAdjuster input')[0].value + 'px;"';
         return stringSupplant("#{before}<a href=\"#{url}\"#{htmlAttrs}><img class=\"inMessageImage\" src=\"#{url}\" alt=\"#{displayUrl}\" #{imgSetSize}/></a>#{after}", d);
       } else {
         return stringSupplant("#{before}<a href=\"#{url}\"#{htmlAttrs}>#{displayUrl}</a>#{after}", d);

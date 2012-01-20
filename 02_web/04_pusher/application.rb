@@ -103,11 +103,13 @@ class DemoApp < Sinatra::Base
     puts "post '/:token/items.json'"
     a_chat = Chat.find_by_token(params[:token])
     input = JSON.parse(request.body.read)
+    puts input
     item = ChatMessage.create!({
       :chat => a_chat,
       :author => request.cookies['user_name'],
       :message => input['message'],
-      :when => Time.now.to_s
+      :when => Time.now.to_s,
+      :room => input['room']
     })
 
     Pusher[a_chat.channel_name].trigger('created', item.attributes, params[:socket_id])

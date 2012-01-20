@@ -10,13 +10,8 @@
     evaluate : /\{\{\[(.+?)\]\}\}/g,
   };
 
-#app
-  %audio#bell
-    -#http://soundbible.com/1143-Cow-And-Bell.html
-    %source{:src => "audio/Cow_And_Bell.mp3", :type => "audio/mp3"}
-    %source{:src => "audio/Cow_And_Bell.wav", :type => "audio/wav"}
-    Your browser does not support the audio tag
-  
+#room1.app{:style => 'float: left; margin-left: 20px;'}
+
   .sizeAdjuster
     %input{:type => "range", :min => 10, :max => 100, :value => 25}
     -#%a{:href => "#"} <
@@ -31,21 +26,49 @@
     %p
       %input#the_url{:type=>:text, :readonly=>:readonly, :value=>"#{ url_for('/' + @a_chat.token, :full) }"}
 
-    %p#usersInChat
-      %span#presence-stats
-      %span#presence-all
+    %p.usersInChat
+      %span.presence-stats
+      %span.presence-all
 
   .content
     #create
       %input#new-chat{:placeholder=>"Type your message here...", :type=>"text"}
       %span.ui-tooltip-top
         Type your message here, then press Enter to send
-    #chat-list
+    .chat-list
+
+
+#room2.app{:style => 'float: right; margin-right: 20px;'}
+
+  .sizeAdjuster
+    %input{:type => "range", :min => 10, :max => 100, :value => 25}
+    -#%a{:href => "#"} <
+    -#%a{:href => "#"} >
+
+  .debugMessages
+    %img{:src => 'images/settings.png'}
+    .infoDisplay
+      %span{:id => "num_messages"} 0
+
+  .title
+    %p
+      %input#the_url{:type=>:text, :readonly=>:readonly, :value=>"#{ url_for('/' + @a_chat.token, :full) }"}
+
+    %p.usersInChat
+      %span.presence-stats
+      %span.presence-all
+
+  .content
+    #create
+      %input#new-chat{:placeholder=>"Type your message here...", :type=>"text"}
+      %span.ui-tooltip-top
+        Type your message here, then press Enter to send
+    .chat-list
 
 
 %script#presence-item-template{:type => "text/template"}
   %a{:id => "presence-item-{{ id }}", :class=>"author_span {{[ you ? 'you' : '' ]}}", :href => "http://twitter.com/{{ name }}"}
-    %img{:title => "{{ name }}", :src => "http://twitter.com/api/users/profile_image/{{ name }}", :alt => ".", :onload => "$('#chat-list').resize();"}
+    %img{:title => "{{ name }}", :src => "http://twitter.com/api/users/profile_image/{{ name }}", :alt => ".", :onload => "$('.chat-list').resize();"}
     {{ name }}
 
 %script#presence-stats-template{:type => "text/template"}
@@ -58,4 +81,4 @@
   .item-span
     {{ message }}
   .author-span
-    {{when}} by {{ author }}
+    {{when}} by {{ author }} in {{ room }}

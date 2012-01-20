@@ -44,20 +44,21 @@ a.author_span {
   color: inherit;
 }
 
-#app {
+.app {
   position: relative;
   width: 40%;
   margin: 0 auto 40px;
+  margin-bottom: 0px;
   background: white;
   -moz-box-shadow: rgba(0, 0, 0, 0.2) 0 5px 6px 0;
   -webkit-box-shadow: rgba(0, 0, 0, 0.2) 0 5px 6px 0;
   -o-box-shadow: rgba(0, 0, 0, 0.2) 0 5px 6px 0;
   box-shadow: rgba(0, 0, 0, 0.2) 0 5px 6px 0;
 }
-#app .title {
+.app .title {
   margin:0px;
 }
-#app .title p {
+.app .title p {
   border-left: 2px solid #000;
   border-right: 2px solid #000;
   background: #333;
@@ -66,7 +67,7 @@ a.author_span {
   text-align: center;
   display: block;
 }
-#app .title p input {
+.app .title p input {
   border: 1px solid #000;
   background: #444;
   color: #eee;
@@ -290,7 +291,7 @@ a.you { /* .you got over written by a.author_span */
   display: none;
 }
 
-#chat-list {
+.chat-list {
   overflow-y: scroll;
 }
 

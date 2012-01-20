@@ -11,4 +11,9 @@
   = stylesheet_link_tag "screen.css"
 
   %body
+    %audio#bell
+      -#http://soundbible.com/1143-Cow-And-Bell.html
+      %source{:src => "audio/Cow_And_Bell.mp3", :type => "audio/mp3"}
+      %source{:src => "audio/Cow_And_Bell.wav", :type => "audio/wav"}
+      Your browser does not support the audio tag
     = yield
