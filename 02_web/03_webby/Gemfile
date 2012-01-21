@@ -1,0 +1,10 @@
+source :rubygems
+
+gem 'sinatra'
+gem 'sinatra-respond_to'
+gem 'padrino-helpers'
+gem "rack"
+gem "rack_csrf"
+gem 'supermodel'
+gem 'haml'
+gem 'json'
