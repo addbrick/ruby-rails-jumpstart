@@ -47,7 +47,6 @@ var maxMessages = 20; // The maximum number of messages you want to be displayed
   }
 
   $(window).resize(resizeChatList);
-  //Tried getting it to resize once images load, but nothing seems to be working.
   
   window.app = window.app || {};
   var appName = "Chat";
@@ -62,7 +61,7 @@ var maxMessages = 20; // The maximum number of messages you want to be displayed
 
     initialize: function() {
       console.log('initialize');
-      if (!this.get('message')) {
+      if (!this.get('message') && !this.get('clear')) {
         this.set({'message': this.EMPTY});
       }
     }
@@ -133,7 +132,8 @@ var maxMessages = 20; // The maximum number of messages you want to be displayed
     events: {
       'keypress #new-chat': 'createOnEnter',
       'focus #new-chat':    'showTooltip',
-      'blur #new-chat':    'hideTooltip',
+      'blur #new-chat':     'hideTooltip',
+      'click #clear-chat':   'clearChat',
     },
 
     initialize: function() {
@@ -149,9 +149,12 @@ var maxMessages = 20; // The maximum number of messages you want to be displayed
       if (item.attributes.room != this.el[0].id) {
         return;
       }
+      if (item.attributes.clear) {
+        this.el.find('.chat-list').html('');
+        return;
+      }
       var view = new app.ChatView({model: item});
-      //var roomSelector = "#" + view.model.attributes.room + ".app";
-      var chat_list = this.$('.chat-list');//roomSelector + ' .chat-list');
+      var chat_list = this.$('.chat-list');
       if (chat_list.children().length >= maxMessages) {
         chat_list.children().last().remove();
         $(this.el).find('.infoDisplay').children().last().remove();
@@ -173,6 +176,15 @@ var maxMessages = 20; // The maximum number of messages you want to be displayed
         room: this.el[0].id
       };
     },
+    
+    newClearAttributes: function() {
+      console.log('newClearAttributes');
+      return {
+        when:new Date().toString(),
+        room:this.el[0].id,
+        clear:true
+      };
+    },
 
     createOnEnter: function(e) {
       if (e.keyCode != 13) return;
@@ -188,6 +200,12 @@ var maxMessages = 20; // The maximum number of messages you want to be displayed
           input.focus();
         }
       }, 500, this.input);
+    },
+    
+    clearChat: function(e) {
+      console.log("Time to clear");
+      app.Chats.create(this.newClearAttributes());
+      $(e.target).parents('.app').find('.chat-list').html('');
     },
 
     showTooltip: function(e) {

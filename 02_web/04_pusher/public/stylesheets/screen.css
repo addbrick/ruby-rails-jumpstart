@@ -331,3 +331,16 @@ a.playSound img:hover {
   width: 15px;
   margin: 0px;
 }
+
+#clear-chat {
+  position: absolute;
+  top: 1px;
+  left: 9px;
+  font-size: 17px;
+  color: #EEE;
+  background-color: transparent;
+  cursor: pointer;
+}
+#clear-chat:hover {
+  color: #444;
+}

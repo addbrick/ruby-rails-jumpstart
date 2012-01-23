@@ -22,6 +22,8 @@
     .infoDisplay
       %span{:id => "num_messages"} 0
 
+  #clear-chat Clear
+
   .title
     %p
       %input#the_url{:type=>:text, :readonly=>:readonly, :value=>"#{ url_for('/' + @a_chat.token, :full) }"}
@@ -49,6 +51,8 @@
     %img{:src => 'images/settings.png'}
     .infoDisplay
       %span{:id => "num_messages"} 0
+
+  #clear-chat Clear
 
   .title
     %p

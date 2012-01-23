@@ -104,17 +104,48 @@ class DemoApp < Sinatra::Base
     a_chat = Chat.find_by_token(params[:token])
     input = JSON.parse(request.body.read)
     puts input
-    item = ChatMessage.create!({
-      :chat => a_chat,
-      :author => request.cookies['user_name'],
-      :message => input['message'],
-      :when => Time.now.to_s,
-      :room => input['room']
-    })
+    item = if (input['clear'])
+      ChatMessage.create!({
+        :chat => a_chat,
+        :when => Time.now.to_s,
+        :room => input['room'],
+        :clear => input['clear']
+      })
+    else
+      ChatMessage.create!({
+        :chat => a_chat,
+        :author => request.cookies['user_name'],
+        :message => input['message'],
+        :when => Time.now.to_s,
+        :room => input['room']
+      })
+    end
 
     Pusher[a_chat.channel_name].trigger('created', item.attributes, params[:socket_id])
     item.attributes.to_json
   end
+
+
+  # clear chat window (not being used, not sure how to call)
+  post '/:token/clear' do
+    puts "post '/:token/clear'"
+    a_chat = Chat.find_by_token(params[:token])
+    input = JSON.parse(request.body.read)
+    puts input
+    item = ChatMessage.create!({
+      :chat => a_chat,
+      #:author => request.cookies['user_name'],
+      #:message => input['message'],
+      :when => Time.now.to_s,
+      :room => input['room'],
+      :clear => true
+    })
+
+    Pusher[a_chat.channel_name].trigger('clear', item.attributes, params[:socket_id])
+    item.attributes.to_json
+  end
+
+
 
   # items update (UNUSED)
   put '/:token/items/:id' do

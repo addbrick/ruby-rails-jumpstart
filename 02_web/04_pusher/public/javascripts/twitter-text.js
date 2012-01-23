@@ -493,6 +493,7 @@ if (!window.twttr) {
       if (/(\.(png|jpg|gif))$/.test(match)) {
         var room = $("#" + options.room);
         d.imgSetSize = 'style="height: ' + room.find('.sizeAdjuster input')[0].value + 'px; width: ' + room.find('.sizeAdjuster input')[0].value + 'px;"';
+        //return stringSupplant("<iframe width=\"100px\" height=\"166px\" scrolling=\"no\" frameborder=\"no\" src=\"http://w.soundcloud.com/player/?url=http%3A%2F%2Fapi.soundcloud.com\%2Ftracks\%2F24566437&show_artwork=false\"></iframe>");
         return stringSupplant("#{before}<a href=\"#{url}\"#{htmlAttrs}><img class=\"inMessageImage\" src=\"#{url}\" alt=\"#{displayUrl}\" #{imgSetSize}/></a>#{after}", d);
       } else {
         return stringSupplant("#{before}<a href=\"#{url}\"#{htmlAttrs}>#{displayUrl}</a>#{after}", d);
